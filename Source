@@ -8,12 +8,39 @@ local run = game:GetService("RunService")
 local Utility = {}
 local Objects = {}
 function Kavo:DraggingEnabled(frame, parent)
-        
     parent = parent or frame
-    frame.Active = true
-    frame.Draggable = true
-    frame.Selectable = true
+    local dragging = false
+    local dragInput, inputPos, framePos
+    local function startDragging(input)
+        dragging = true
+        inputPos = input.Position
+        framePos = parent.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+    frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or 
+           input.UserInputType == Enum.UserInputType.Touch then
+            startDragging(input)
+        end
+    end)
+    frame.InputChanged:Connect(function(input)
+        if (input.UserInputType == Enum.UserInputType.MouseMovement or 
+            input.UserInputType == Enum.UserInputType.Touch) and dragging then
+            dragInput = input
+        end
+    end)
+    game:GetService("UserInputService").InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - inputPos
+            parent.Position = UDim2.new(framePos.X.Scale, framePos.X.Offset + delta.X, framePos.Y.Scale, framePos.Y.Offset + delta.Y)
+        end
+    end)
 end
+
 
 function Utility:TweenObject(obj, properties, duration, ...)
     tween:Create(obj, tweeninfo(duration, ...), properties):Play()
@@ -109,7 +136,7 @@ end
 Settings = game:service'HttpService':JSONEncode(readfile(Name))
 end)
 
-local LibName = tostring(math.random(1, 100))..tostring(math.random(1,50))..tostring(math.random(1, 100))
+local LibName = "Kavo"
 
 function Kavo:ToggleUI()
     if game.CoreGui[LibName].Enabled then
@@ -405,11 +432,11 @@ function Kavo.CreateLib(kavName, themeList)
 
         tabButton.MouseButton1Click:Connect(function()
             UpdateSize()
-            for i,v in next, Pages:GetChildren() do
+            for i,v in pairs(Pages:GetChildren()) do
                 v.Visible = false
             end
             page.Visible = true
-            for i,v in next, tabFrames:GetChildren() do
+            for i,v in pairs(tabFrames:GetChildren()) do
                 if v:IsA("TextButton") then
                     if themeList.SchemeColor == Color3.fromRGB(255,255,255) then
                         Utility:TweenObject(v, {TextColor3 = Color3.fromRGB(255,255,255)}, 0.2)
@@ -682,7 +709,7 @@ function Kavo.CreateLib(kavName, themeList)
                         end
                         c:Destroy()
                     else
-                        for i,v in next, infoContainer:GetChildren() do
+                        for i,v in pairs(infoContainer:GetChildren()) do
                             Utility:TweenObject(v, {Position = UDim2.new(0,0,2,0)}, 0.2)
                             focusing = false
                         end
@@ -710,7 +737,7 @@ function Kavo.CreateLib(kavName, themeList)
                     if not viewDe then
                         viewDe = true
                         focusing = true
-                        for i,v in next, infoContainer:GetChildren() do
+                        for i,v in pairs(infoContainer:GetChildren()) do
                             if v ~= moreInfo then
                                 Utility:TweenObject(v, {Position = UDim2.new(0,0,2,0)}, 0.2)
                             end
@@ -862,7 +889,7 @@ function Kavo.CreateLib(kavName, themeList)
 
                 btn.MouseButton1Click:Connect(function()
                     if focusing then
-                        for i,v in next, infoContainer:GetChildren() do
+                        for i,v in pairs(infoContainer:GetChildren()) do
                             Utility:TweenObject(v, {Position = UDim2.new(0,0,2,0)}, 0.2)
                             focusing = false
                         end
@@ -890,7 +917,7 @@ function Kavo.CreateLib(kavName, themeList)
 
                 TextBox.FocusLost:Connect(function(EnterPressed)
                     if focusing then
-                        for i,v in next, infoContainer:GetChildren() do
+                        for i,v in pairs(infoContainer:GetChildren()) do
                             Utility:TweenObject(v, {Position = UDim2.new(0,0,2,0)}, 0.2)
                             focusing = false
                         end
@@ -909,7 +936,7 @@ function Kavo.CreateLib(kavName, themeList)
                     if not viewDe then
                         viewDe = true
                         focusing = true
-                        for i,v in next, infoContainer:GetChildren() do
+                        for i,v in pairs(infoContainer:GetChildren()) do
                             if v ~= moreInfo then
                                 Utility:TweenObject(v, {Position = UDim2.new(0,0,2,0)}, 0.2)
                             end
@@ -1110,7 +1137,7 @@ function Kavo.CreateLib(kavName, themeList)
                             toggled = not toggled
                             pcall(callback, toggled)
                         else
-                            for i,v in next, infoContainer:GetChildren() do
+                            for i,v in pairs(infoContainer:GetChildren()) do
                                 Utility:TweenObject(v, {Position = UDim2.new(0,0,2,0)}, 0.2)
                                 focusing = false
                             end
@@ -1153,7 +1180,7 @@ function Kavo.CreateLib(kavName, themeList)
                         if not viewDe then
                             viewDe = true
                             focusing = true
-                            for i,v in next, infoContainer:GetChildren() do
+                            for i,v in pairs(infoContainer:GetChildren()) do
                                 if v ~= moreInfo then
                                     Utility:TweenObject(v, {Position = UDim2.new(0,0,2,0)}, 0.2)
                                 end
@@ -1406,7 +1433,7 @@ function Kavo.CreateLib(kavName, themeList)
                             end
                         end)
                     else
-                        for i,v in next, infoContainer:GetChildren() do
+                        for i,v in pairs(infoContainer:GetChildren()) do
                             Utility:TweenObject(v, {Position = UDim2.new(0,0,2,0)}, 0.2)
                             focusing = false
                         end
@@ -1417,7 +1444,7 @@ function Kavo.CreateLib(kavName, themeList)
                     if not viewDe then
                         viewDe = true
                         focusing = true
-                        for i,v in next, infoContainer:GetChildren() do
+                        for i,v in pairs(infoContainer:GetChildren()) do
                             if v ~= moreInfo then
                                 Utility:TweenObject(v, {Position = UDim2.new(0,0,2,0)}, 0.2)
                             end
@@ -1531,7 +1558,7 @@ function Kavo.CreateLib(kavName, themeList)
                             c:Destroy()
                         end
                     else
-                        for i,v in next, infoContainer:GetChildren() do
+                        for i,v in pairs(infoContainer:GetChildren()) do
                             Utility:TweenObject(v, {Position = UDim2.new(0,0,2,0)}, 0.2)
                             focusing = false
                         end
@@ -1661,7 +1688,7 @@ function Kavo.CreateLib(kavName, themeList)
                     if not viewDe then
                         viewDe = true
                         focusing = true
-                        for i,v in next, infoContainer:GetChildren() do
+                        for i,v in pairs(infoContainer:GetChildren()) do
                             if v ~= moreInfo then
                                 Utility:TweenObject(v, {Position = UDim2.new(0,0,2,0)}, 0.2)
                             end
@@ -1678,7 +1705,7 @@ function Kavo.CreateLib(kavName, themeList)
                     end
                 end)     
 
-                for i,v in next, list do
+                for i,v in pairs(list) do
                     local optionSelect = Instance.new("TextButton")
                     local UICorner_2 = Instance.new("UICorner")
                     local Sample1 = Instance.new("ImageLabel")
@@ -1732,7 +1759,7 @@ function Kavo.CreateLib(kavName, themeList)
                             end
                             c:Destroy()         
                         else
-                            for i,v in next, infoContainer:GetChildren() do
+                            for i,v in pairs(infoContainer:GetChildren()) do
                                 Utility:TweenObject(v, {Position = UDim2.new(0,0,2,0)}, 0.2)
                                 focusing = false
                             end
@@ -1773,12 +1800,12 @@ function Kavo.CreateLib(kavName, themeList)
 
                 function DropFunction:Refresh(newList)
                     newList = newList or {}
-                    for i,v in next, dropFrame:GetChildren() do
+                    for i,v in pairs(dropFrame:GetChildren()) do
                         if v.Name == "optionSelect" then
                             v:Destroy()
                         end
                     end
-                    for i,v in next, newList do
+                    for i,v in pairs(newList) do
                         local optionSelect = Instance.new("TextButton")
                         local UICorner_2 = Instance.new("UICorner")
                         local Sample11 = Instance.new("ImageLabel")
@@ -1833,7 +1860,7 @@ function Kavo.CreateLib(kavName, themeList)
                                 end
                                 c:Destroy()         
                             else
-                                for i,v in next, infoContainer:GetChildren() do
+                                for i,v in pairs(infoContainer:GetChildren()) do
                                     Utility:TweenObject(v, {Position = UDim2.new(0,0,2,0)}, 0.2)
                                     focusing = false
                                 end
@@ -1939,7 +1966,7 @@ function Kavo.CreateLib(kavName, themeList)
                             wait(len / 12)
                         end
                     else
-                        for i,v in next, infoContainer:GetChildren() do
+                        for i,v in pairs(infoContainer:GetChildren()) do
                             Utility:TweenObject(v, {Position = UDim2.new(0,0,2,0)}, 0.2)
                             focusing = false
                         end
@@ -2005,7 +2032,7 @@ function Kavo.CreateLib(kavName, themeList)
                     if not viewDe then
                         viewDe = true
                         focusing = true
-                        for i,v in next, infoContainer:GetChildren() do
+                        for i,v in pairs(infoContainer:GetChildren()) do
                             if v ~= moreInfo then
                                 Utility:TweenObject(v, {Position = UDim2.new(0,0,2,0)}, 0.2)
                             end
@@ -2199,7 +2226,7 @@ function Kavo.CreateLib(kavName, themeList)
                             c:Destroy()
                         end
                     else
-                        for i,v in next, infoContainer:GetChildren() do
+                        for i,v in pairs(infoContainer:GetChildren()) do
                             Utility:TweenObject(v, {Position = UDim2.new(0,0,2,0)}, 0.2)
                             focusing = false
                         end
@@ -2277,7 +2304,7 @@ function Kavo.CreateLib(kavName, themeList)
                     if not viewDe then
                         viewDe = true
                         focusing = true
-                        for i,v in next, infoContainer:GetChildren() do
+                        for i,v in pairs(infoContainer:GetChildren()) do
                             if v ~= moreInfo then
                                 Utility:TweenObject(v, {Position = UDim2.new(0,0,2,0)}, 0.2)
                             end
